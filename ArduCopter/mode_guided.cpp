@@ -151,7 +151,7 @@ void ModeGuided::pos_control_start()
 }
 
 // initialise guided mode's velocity controller
-void ModeGuided::vel_control_start()
+void ModeGuided::vel_control_start()//速度控制
 {
     // set guided_mode to velocity controller
     guided_mode = Guided_Velocity;
@@ -169,7 +169,7 @@ void ModeGuided::vel_control_start()
 }
 
 // initialise guided mode's posvel controller
-void ModeGuided::posvel_control_start()
+void ModeGuided::posvel_control_start()//位置和速度都被控制
 {
     // set guided_mode to velocity controller
     guided_mode = Guided_PosVel;
@@ -201,7 +201,7 @@ bool ModeGuided::is_taking_off() const
 }
 
 // initialise guided mode's angle controller
-void ModeGuided::angle_control_start()
+void ModeGuided::angle_control_start()//角度控制
 {
     // set guided_mode to velocity controller
     guided_mode = Guided_Angle;
@@ -232,6 +232,7 @@ void ModeGuided::angle_control_start()
 // guided_set_destination - sets guided mode's target destination
 // Returns true if the fence is enabled and guided waypoint is within the fence
 // else return false if the waypoint is outside the fence
+// set_destination设置目标航点
 bool ModeGuided::set_destination(const Vector3f& destination, bool use_yaw, float yaw_cd, bool use_yaw_rate, float yaw_rate_cds, bool relative_yaw, bool terrain_alt)
 {
 #if AC_FENCE == ENABLED
@@ -260,6 +261,7 @@ bool ModeGuided::set_destination(const Vector3f& destination, bool use_yaw, floa
     return true;
 }
 
+//get_wp获取当前的目标航点
 bool ModeGuided::get_wp(Location& destination)
 {
     if (guided_mode != Guided_WP) {
@@ -271,6 +273,7 @@ bool ModeGuided::get_wp(Location& destination)
 // sets guided mode's target from a Location object
 // returns false if destination could not be set (probably caused by missing terrain data)
 // or if the fence is enabled and guided waypoint is outside the fence
+// set_destination标准经纬度下的目标航点
 bool ModeGuided::set_destination(const Location& dest_loc, bool use_yaw, float yaw_cd, bool use_yaw_rate, float yaw_rate_cds, bool relative_yaw)
 {
 #if AC_FENCE == ENABLED
@@ -304,6 +307,7 @@ bool ModeGuided::set_destination(const Location& dest_loc, bool use_yaw, float y
 }
 
 // guided_set_velocity - sets guided mode's target velocity
+// set_velocity设置速度
 void ModeGuided::set_velocity(const Vector3f& velocity, bool use_yaw, float yaw_cd, bool use_yaw_rate, float yaw_rate_cds, bool relative_yaw, bool log_request)
 {
     // check we are in velocity control mode
@@ -325,6 +329,7 @@ void ModeGuided::set_velocity(const Vector3f& velocity, bool use_yaw, float yaw_
 }
 
 // set guided mode posvel target
+// set_destination_posvel设置目标位置和速度
 bool ModeGuided::set_destination_posvel(const Vector3f& destination, const Vector3f& velocity, bool use_yaw, float yaw_cd, bool use_yaw_rate, float yaw_rate_cds, bool relative_yaw)
 {
 #if AC_FENCE == ENABLED
@@ -357,6 +362,7 @@ bool ModeGuided::set_destination_posvel(const Vector3f& destination, const Vecto
 }
 
 // set guided mode angle target and climbrate
+// set_angle设置目标角度
 void ModeGuided::set_angle(const Quaternion &q, float climb_rate_cms_or_thrust, bool use_yaw_rate, float yaw_rate_rads, bool use_thrust)
 {
     // check we are in velocity control mode
@@ -425,15 +431,17 @@ void ModeGuided::pos_control_run()
     }
 
     // set motors to full range
+    //外环控制，获取目标角度
     motors->set_desired_spool_state(AP_Motors::DesiredSpoolState::THROTTLE_UNLIMITED);
 
     // run waypoint controller
-    copter.failsafe_terrain_set_status(wp_nav->update_wpnav());
+    copter.failsafe_terrain_set_status(wp_nav->update_wpnav()); // wpnav航点导航
 
     // call z-axis position controller (wpnav should have already updated it's alt target)
     pos_control->update_z_controller();
 
     // call attitude controller
+    //把目标角度赋到姿态控制器里，姿态控制器根据目标角度得到目标角速度，再根据角速度得到混控输出
     if (auto_yaw.mode() == AUTO_YAW_HOLD) {
         // roll & pitch from waypoint controller, yaw rate from pilot
         attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(wp_nav->get_roll(), wp_nav->get_pitch(), target_yaw_rate);

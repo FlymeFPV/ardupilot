@@ -221,6 +221,7 @@ public:
     friend class ModeSystemId;
     friend class ModeThrow;
     friend class ModeZigZag;
+    friend class ModeDrawStar;
     friend class ModeAutorotate;
 
     Copter(void);
@@ -965,6 +966,9 @@ private:
 #if MODE_ZIGZAG_ENABLED == ENABLED
     ModeZigZag mode_zigzag;
 #endif
+
+    ModeDrawStar mode_drawstar;
+
 #if MODE_AUTOROTATE_ENABLED == ENABLED
     ModeAutorotate mode_autorotate;
 #endif

@@ -572,6 +572,10 @@ public:
     AP_Follow follow;
 #endif
 
+#if MODE_DRAWSTAR_ENABLED == ENABLED
+    AP_Float star_radius_cm;
+#endif
+
 #ifdef USER_PARAMS_ENABLED
     // User custom parameters
     UserParameters user_parameters;
